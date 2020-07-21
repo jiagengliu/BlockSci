@@ -40,10 +40,10 @@ namespace heuristics {
         }
 
         auto inputAddress = tx.inputs()[0].getAddress();
-        auto inputs = inputAddress.getInputs();
-        return (ranges::distance(inputs) == 1 &&
-                ranges::distance(inputs | ranges::views::filter([](Input i){return i.age() < 152;})) == 1 &&
-                ranges::distance(inputAddress.getOutputs()) == 1);
+        return (ranges::distance(inputAddress.getInputs()) == 1 &&
+                ranges::distance(inputAddress.getOutputs()) == 1 &&
+                ranges::distance(inputAddress.getInputs() |
+                ranges::views::filter([](Input i){return i.age() < 152;})) == 1);
     }
     
     bool isCoinjoin(const Transaction &tx) {
