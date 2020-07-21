@@ -10,8 +10,11 @@
 #include <blocksci/chain/input.hpp>
 #include <blocksci/chain/output.hpp>
 #include <blocksci/scripts/script_variant.hpp>
+#include <blocksci/address/address.hpp>
 
 #include <range/v3/range_for.hpp>
+#include <range/v3/iterator/operations.hpp>
+#include <range/v3/view/filter.hpp>
 
 #include <algorithm>
 #include <unordered_set>
@@ -28,21 +31,19 @@ namespace heuristics {
 
     // A transaction is considered a peeling chain if it has one input and two outputs,
     // and either the previous or one of the next transactions looks like a peeling chain.
+    // Jiageng: we apply a more stringent condition:
+    // the input address only has one input and one output
+    // and the age of the input is less than 152 blocks (avg # blocks each day)
     bool isPeelingChain(const Transaction &tx) {
         if (!looksLikePeelingChain(tx)) {
             return false;
         }
-        // Check if past transaction is peeling chain
-        if (looksLikePeelingChain(tx.inputs()[0].getSpentTx())) {
-            return true;
-        }
-        // Check if any spending transaction is peeling chain
-        RANGES_FOR(auto output, tx.outputs()) {
-            if (output.isSpent() && looksLikePeelingChain(*output.getSpendingTx())) {
-                return true;
-            }
-        }
-        return false;
+
+        auto inputAddress = tx.inputs()[0].getAddress();
+        auto inputs = inputAddress.getInputs();
+        return (ranges::distance(inputs) == 1 &&
+                ranges::distance(inputs | ranges::views::filter([](Input i){return i.age() < 152;})) == 1 &&
+                ranges::distance(inputAddress.getOutputs()) == 1);
     }
     
     bool isCoinjoin(const Transaction &tx) {
