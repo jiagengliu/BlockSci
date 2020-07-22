@@ -43,7 +43,7 @@ namespace heuristics {
         return (ranges::distance(inputAddress.getInputs()) == 1 &&
                 ranges::distance(inputAddress.getOutputs()) == 1 &&
                 ranges::distance(inputAddress.getInputs() |
-                ranges::views::filter([](Input i){return i.age() < 152;})) == 1);
+                    ranges::views::filter([](Input i){return i.age() < 152;})) == 1);
     }
     
     bool isCoinjoin(const Transaction &tx) {
